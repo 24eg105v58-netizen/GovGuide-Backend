@@ -1,0 +1,11 @@
+target/
+*.class
+*.log
+*.java.backup
+.env
+.env.*
+!.env.example
+application-local.properties
+application-secret.properties
+powershell.bat
+src/main/resources/application.properties
