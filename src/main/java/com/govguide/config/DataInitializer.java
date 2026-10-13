@@ -1,8 +1,8 @@
 package com.govguide.config;
 
-import com.govguide.entity.*;
-import com.govguide.repository.SchemeRepository;
-import com.govguide.repository.UserRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +11,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import com.govguide.entity.Scheme;
+import com.govguide.entity.SchemeDocument;
+import com.govguide.entity.SchemeEligibilityRule;
+import com.govguide.entity.User;
+import com.govguide.repository.SchemeRepository;
+import com.govguide.repository.UserRepository;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -25,10 +29,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Value("${govguide.admin.default-email:admin@govguide.nic.in}")
     private String adminEmail;
-
-    @Value("${govguide.admin.default-password:AdminSecure@GovGuide2026}")
-    private String adminPassword;
-
+@Value("${govguide.admin.default-password}")
+private String adminPassword;
+    
     @Value("${govguide.admin.default-name:GovGuide Administrator}")
     private String adminName;
 

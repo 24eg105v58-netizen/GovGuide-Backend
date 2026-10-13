@@ -1,13 +1,17 @@
 package com.govguide.config;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import java.util.Date;
+
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.util.Date;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtTokenProvider {
@@ -16,9 +20,16 @@ public class JwtTokenProvider {
     private final long expirationMs;
 
     public JwtTokenProvider(
-            @Value("${govguide.jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}") String secret,
+            @Value("${govguide.jwt.secret}") String secret,
             @Value("${govguide.jwt.expiration-ms:86400000}") long expirationMs) {
-        byte[] keyBytes = Decoders.BASE64.decode(secret.length() < 32 ? "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970" : secret);
+
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException(
+                    "JWT secret must decode to at least 32 bytes.");
+        }
+
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.expirationMs = expirationMs;
     }
@@ -43,6 +54,7 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+
         return claims.getSubject();
     }
 
@@ -52,6 +64,7 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+
         return claims.get("role", String.class);
     }
 
@@ -61,12 +74,17 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+
         return claims.get("userId", Long.class);
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
